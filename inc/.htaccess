@@ -1,0 +1,12 @@
+<Files ~ "^.*">
+  Deny from all
+</Files>
+
+<Files ~ "logout.php">
+  Allow from all
+</Files>
+
+<Files ~ "process_login.php">
+  Allow from all
+</Files>
+

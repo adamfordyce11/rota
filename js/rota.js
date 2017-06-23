@@ -1,0 +1,1137 @@
+(function($){
+
+  $.fn.hasAttr = function(name) {  
+    return this.attr(name) !== undefined;
+  };
+
+  $.fn.rota = function( options ){
+    
+    var defaults = {
+      id: "#rota1",
+      lastUpdate: "",
+      period: "today",
+      action: "rota",
+      url: "controller.php",
+      force: "rw",
+      sort: "asc",
+      user: "single",
+    };
+    var settings = $.extend({}, defaults, options);
+
+      var totals=Array();
+      var totalDays=Array();
+
+      function newMonth(p) {
+        $(settings.id+" #rota").remove()                           // Remove if it already exists
+        $("#rotaNewPeriod").remove();
+        document.title = "Create a new rota period";              // Set the document title
+        $.get(settings.url, { 'request':"getLastEntry" }, null,"json").done(function(data){
+          var first=data+(60*60*24);
+          var t=Array(), tp=-1;               // Declare an array and an index to build the HTML
+          t[++tp] = "<div id='rotaNewPeriod'>";
+          d=new Date(first*1000);
+          t[++tp] = "  <div class='container-float'>";
+          t[++tp] = "    <div class='row'>";
+          t[++tp] = "      <div class='col-md-12'>";
+          t[++tp] = "        <table class='table table-sm' id='rota'>";
+          t[++tp] = "          <thead id='rotaHeader'><tr>";
+          t[++tp] = "            <th colspan='32'>New Period";
+          t[++tp] = "              <div class='titlebtn' id='rotaPreviousButton'><img src='img/before.png' /></div>";
+          t[++tp] = "            </th>";
+          t[++tp] = "          </tr></thead>";
+          t[++tp] = "        </table>";
+          t[++tp] = "      </div>";
+          t[++tp] = "    </div>";
+          t[++tp] = "    <div class='row'>";
+          t[++tp] = "      <div class='col-md-4'>";
+          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "          <label for='startDate'>Start Date</label>";
+          t[++tp] = "          <input type='text' class='form-control' id='startDate' readonly time='"+first+"' value='"+d.getUTCDate()+"/"+Number(d.getUTCMonth()+1)+"/"+d.getUTCFullYear()+"'/>";
+          t[++tp] = "        </div>";
+          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "          <label for='duration'>Duration</label>";
+          t[++tp] = "          <input type='text' class='form-control' id='duration' value='31'></input>";
+          t[++tp] = "        </div>";
+          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "          <button type='button' class='btn btn-default' id='createPeriod'>Create</button>";
+          t[++tp] = "        </div>";
+          t[++tp] = "      </div>";
+          t[++tp] = "      <div class='col-md-3'>";
+          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "          <label for='add'>Add: </label>";
+          t[++tp] = "          <select multiple class='form-control' id='add'></select>";
+          t[++tp] = "        </div>";
+          t[++tp] = "        <div class='btn-group'>";
+          t[++tp] = "          <button id='addBtn' class='btn btn-default' type='button'>";
+          t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em>Add >> </button>"; 
+          t[++tp] = "        </div>";
+          t[++tp] = "      </div>";
+          t[++tp] = "      <div class='col-md-3'>";
+          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "          <label for='remove'>Remove People: </label>";
+          t[++tp] = "          <select multiple class='form-control' id='remove'></select>";
+          t[++tp] = "        </div>";
+          t[++tp] = "        <div class='btn-group'>";
+          t[++tp] = "          <button id='removeBtn' class='btn btn-default' type='button'>";
+          t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em><< Remove</button>"; 
+          t[++tp] = "        </div>";
+          t[++tp] = "      </div>";
+          t[++tp] = "    </div>";
+          t[++tp] = "  </div>";
+
+          $(settings.id).append(t.join(''));   // Add the table with rotaHeader to the document
+          settings.period=data;
+          $(settings.id+" #rotaPreviousButton").on("click",function(){ changePeriod( settings.period, "previous") });
+          $(settings.id+" #createPeriod").hide();
+
+          $.get(settings.url, { 'request':"getJson", 'period':settings.period }, null,"json").done(function(data){
+            // Populate the drop down list
+            $.get(settings.url,{'request':"getPeople",'rota':'marinesupportoncall' },"","json").done(function(d){
+              console.log("getPeople()");
+              $.each(d.people, function(key,value){ // For each person
+                $('<option>').val(Number(key+1)).text(value.name).appendTo("#add"); // Add the name as an option
+              });
+            });
+   
+            // If the person is changed in the selector, reload the page data
+            $(settings.id+" #addBtn").on("click",function(){
+              $.each($(settings.id+" #add option:selected"), function(){
+                var who = $(this).text();
+                //var who = $(settings.id+" #add option:selected").text();
+                $('<option>').text(who).appendTo("#remove");
+                $(settings.id+" #add option:contains('"+who+"')").remove();
+              });
+              $(settings.id+" #createPeriod").show();
+            });
+
+            // If the person is changed in the selector, reload the page data
+            $(settings.id+" #removeBtn").on("click",function(){
+              $.each($(settings.id+" #remove option:selected"), function(){
+                var who = $(this).text();
+                $('<option>').text(who).appendTo("#add");
+                $(settings.id+" #remove option:contains('"+who+"')").remove();
+              });
+            });
+
+            $(settings.id+" #createPeriod").on("click",function(){
+              var names =[],c = -1;
+              $.each($(settings.id+" #remove").children().get(),function(){
+                names[++c] = $(this).text();
+              });
+
+              json_names = JSON.stringify({names:names}); // Convert names obj to json
+
+              // Ajax request
+              $.get(settings.url, { 
+                'request':"createPeriod", 
+                'period':$(settings.id+" #startDate").attr("time"),
+                'days':$(settings.id+" #duration").val(),
+                'who':json_names
+              }, null,"json").always(function(data){
+                 // Need to update the table, re-initialise.
+                 var when = $(settings.id+" #rotaNewPeriodFirst").attr("time");
+                 settings.period = when; // Have the new period show
+                 main();
+              });
+            });
+          });
+        }).fail(function(xhr,st,err){
+          console.log("Error, unable to get last month");
+        });
+      }
+
+      /*
+       * Calculate the totals and populate a new table section
+       */ 
+      function totalTable(d){
+        $(settings.id+" #summaryTable").remove();  // Remove any existing table, we'll rebuild it so its up to date!
+        // Get dimensions
+        var h=$(settings.id+" #rota").outerHeight(true);
+        var w=$(settings.id+" #rota").width();
+        if (h<"384px"){ h="385"; }
+        var num_events=$(settings.id+" #rota tbody#days td#title").length;
+        var barHeight=((h*0.8)-(num_events*5))/num_events;
+        
+        var t=Array(), tp=-1;                      // Declare an array and an index to build the HTML
+        t[++tp]="<div id='summaryTable'>";
+        t[++tp]="<svg class='chart' width='"+(w*0.8)+"' height='"+(h*0.8)+"' aria-labelledby='title desc' role='img'>";
+        t[++tp]="<title id='title'>Month Totals</title>";
+        t[++tp]="<desc id='desc'>4 apples; 8 bananas; 15 kiwis; 16 oranges; 23 lemons</desc>";
+        var pad=0;
+        $(settings.id+" #rota tbody#days td#title").each(function(){
+          var who=$(this).parent().attr("id");
+          var count=0, sum = $(settings.id+" tr#"+who.replace(" ","\\ ")+".r td.n.oncall").each(function(){ count=count+(+$(this).text())});
+          var days="";
+          t[++tp]="<g class='bar'>";
+          t[++tp]="<text x='"+Number(0)+"px' y='"+Number(pad+(barHeight/2.5))+"' dy='.35em'>"+who+"</text>"; // Totals
+          t[++tp]="<rect x='"+Number(100)+"px' width='"+Number(count*100)+"px' height='"+Number(barHeight-10)+"px' y='"+Number(pad)+"'></rect>";      // Bar
+          t[++tp]="<text x='"+Number(100+(count*100)+10)+"px' y='"+Number(pad+(barHeight/2.5))+"' dy='.35em'>"+count+" days</text>"; // Totals
+          t[++tp]="</g>";
+          pad+=barHeight;
+        });
+        t[++tp]="</svg>";
+        t[++tp] = "</div>";
+        $(settings.id+" #rotaBlank").append(t.join(''));   // Add the table with rotaHeader to the document
+      }
+      
+      /*
+       * Ajax request to add person via the controller.
+       */ 
+      function addEntry(){
+        console.log("addEntry");
+        $.each($(settings.id+" #settingsAdd option:selected"), function(){
+          var who = $(this).text();
+          $.get(settings.url, { request:"addPerson", 'person': who, 'period': settings.period, 'days': totalDays }, null,"json").done(function(d){
+            initTable(d); // After adding someone, rebuild the table contents
+            Reload(d);   // Reload the table to ensure the onclick and rules are added correctly
+          });
+        });
+      }
+      
+      /*
+       * Ajax request to remove a person via the controller.
+       */ 
+      function removeEntry(){
+        console.log("removeEntry()");
+        $.each($(settings.id+" #settingsRemove option:selected"), function(){
+          var who = $(this).text();
+          console.log("Remove: "+who);
+          $.get(settings.url, { 'request':"removePerson",'person':who,'period':settings.period,'days':totalDays }, null,"json").done(function(d){
+            initTable(d); // After adding someone, rebuild the table contents
+            Reload(d);   // Reload the table to ensure the onclick and rules are added correctly
+          });
+        });
+      }
+      
+      /*
+       * Update the table rules.
+       */ 
+      function applyRules() {    
+        console.log("applyRules()");
+        $(settings.id+" tr.r").each(function(){
+          var editable="F";
+          var what = $(this);
+          what.removeClass("edit");
+          what.attr("editable",editable);
+
+        });
+
+        $(settings.id+" tr.r").each(function(){
+          var who= $(this).attr("id");
+          $(this).find("#title").remove("td");
+          $(this).prepend("<td id='title'>"+who+"</td>");
+          var editable="F";
+          // Store the current object selection
+          var what = $(this);
+          // Find out who we are authed as
+          var auth="";
+          if ($(settings.id).hasAttr("edit")) {
+            auth=$(settings.id).attr("edit");
+          }
+          // Reset the editable entries
+//          what.removeClass("edit");
+//          what.attr("editable",editable);
+
+          // Enable editing on each of the editable entries
+          $(settings.id+" #rota #RotaCurrentEntryEdit p").each(function(){
+             var current = $(this).text();
+             if (current==who) {
+               editable="T";
+               what.addClass("edit");
+               what.attr("editable",editable);
+             } else {
+               what.removeClass("edit");
+               what.attr("editable",editable);
+             }
+          });
+          if (who.replace(" ","\ ")==auth.replace(" ", "\ ")) {
+            editable="T";
+            what.addClass("edit");
+            what.attr("editable",editable);
+          }
+        });
+      }
+      
+      function loading(action){
+        console.log("loading("+action+")");
+        if (action=="start"){
+          $(settings.id).hide();
+          $(settings.id).after("<div id='"+settings.id+"rotaLoading'></div>");
+        } else if (action=="stop"){
+          $(settings.id).fadeIn("slow");
+              
+          $(settings.id+"rotaLoading").remove();
+        }
+        // Set the style for the settings background
+        $(settings.id+" #rotaLoading").css({
+          "border": "1px solid #8c8c8c",
+          "position":"absolute",
+          "display":"block",
+          "background-color":"#f2f2f2",
+          "top":"0",
+          "left":"0",
+          "width": "100%",
+          "height":"100%",
+          "padding":"0",
+          "margin":"0",
+          "-webkit-box-sizing": "border-box",
+          "-moz-box-sizing": "border-box",
+          "box-sizing": "border-box"
+        });
+      }
+
+      /*
+       * Reload the table
+       */ 
+      function Reload(obj) {
+        console.log("Reload()");
+
+        var startDate=new Date(obj.start).getTime(),endDate=new Date(obj.end).getTime(),sday=Number((60*60*24)*1000);
+        // Initialise a date object
+        var today=new Date();
+        // Get the date object in UTC
+        today = new Date(today.getUTCFullYear(), 
+                     today.getUTCMonth(),
+                     today.getUTCDate(),
+                     today.getUTCHours(),
+                     today.getUTCMinutes(),
+                     today.getUTCSeconds());
+        // Get day of month
+        var UTCDom=today.getUTCDate();
+        var UTCMonth=today.getUTCMonth()+1;
+        var UTCYear=today.getUTCFullYear();
+
+        // Update the last update time 
+        $(settings.lastUpdate).text(today);
+
+        $.get(settings.url, { 'request':"getJson", 'period': settings.period }, null,"json").done(function(d){
+          $(settings.id+" tr.r").each(function(){
+          var who=$(this).attr("id");
+          $.each(d.people,function(i,d){
+            /*
+             * Calculate the totals for each day.
+             */ 
+            if (who == d.name){
+              $.each(d.data.booked,function(idx,data){
+                // Count what day of the rota period is being looked at
+                var currentDay = new Date((startDate+((idx)*sday)))
+                var currentUTCDay = new Date(currentDay.getUTCFullYear(), 
+                                             currentDay.getUTCMonth(), 
+                                             currentDay.getUTCDate(),
+                                             currentDay.getUTCHours(),
+                                             currentDay.getUTCMinutes(),
+                                             currentDay.getUTCSeconds());
+   
+                var ProcessedUTCDom = currentUTCDay.getUTCDate();
+                var ProcessedUTCMonth = currentUTCDay.getUTCMonth()+1;
+                var ProcessedUTCYear = currentUTCDay.getUTCFullYear();
+
+                who=who.replace(" ","\ ");
+                r=$(settings.id+" [id='"+who+"'] > #day"+idx);
+                r.removeClass("available").removeClass("weekend").removeClass("holiday").removeClass("oncall").removeClass("pending").removeClass("today");
+                if (ProcessedUTCDom == UTCDom & ProcessedUTCMonth == UTCMonth & ProcessedUTCYear == UTCYear){
+                    console.log("Processed Day: "+ProcessedUTCDom+" Day of month is: "+UTCDom);
+                    r.addClass("today");
+                }
+                if (data==0) {
+                  r.attr("value","F");
+                  r.text("");
+                  if (r.attr("weekend")=="yes") {
+                    r.addClass("weekend").addClass("available");
+                  } else {
+                    r.addClass("available");
+                  }
+                } else if (data==1){
+                  r.attr("value","O");
+                  if (r.attr("weekend")=="yes") {
+                    r.addClass("weekend").addClass("oncall");
+                    r.attr("title","On Call (Weekend)");
+                    r.text("1");
+                    //r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/full_star.png'>");
+                  } else {
+                    r.addClass("oncall");
+                    r.attr("title","On Call (Weekday)");
+                    r.text("0.5");
+                    //r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/half_star.png'>");
+                  }
+                } else if (data==2){
+                  r.attr("value","1");
+                  if (r.attr("weekend")=="yes") {
+                    r.addClass("weekend").addClass("oncall");
+                    r.attr("title","On Call (Weekend)");
+                    r.text("0.5");
+                    //r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/full_star.png'>");
+                  } else {
+                    r.addClass("oncall");
+                    r.attr("title","On Call (Weekday)");
+                    r.text("0.25");
+                    //r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/half_star.png'>");
+                  }
+                } else {
+                  r.attr("value","H");
+                  if (r.attr("weekend")=="yes") {
+                    r.addClass("weekend").addClass("holiday");
+                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                  } else {
+                    r.addClass("holiday");
+                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                  }
+                }
+                });
+              }
+            });
+          });
+          updateTotals(d);
+        });
+        applyRules();
+        // Context Menu - Some help from http://stackoverflow.com/questions/4495626/making-custom-right-click-context-menus-for-my-web-app
+        $(settings.id+" td").bind("contextmenu",function(event){
+          event.preventDefault();
+          var posX = $(this).offset().left, posY = $(this).offset().top;
+          if ($(this).hasClass("n") && $(this).parent().hasClass("edit")){
+          $(this).addClass("menuActive");
+          $(settings.id+" .day-menu").finish().toggle(100).css({
+            "top": posY/2+"px",
+            "left": posX/2+"px"
+          });
+          }else if ($(this).attr("id")=="title"){
+          $(this).parent().addClass("menuActive");
+          $(settings.id+" .title-menu").finish().toggle(100).css({
+            "top": posY/2+"px",
+            "left": posX/2+"px"
+          });
+          }
+        });
+      
+        $(settings.id+" td#title, td.n").bind("mousedown", function(e) {
+          if ($(this).hasClass("n") && $(this).parent().hasClass("edit")){
+          if (!$(e.target).parents(".day-menu").length > 0) {
+            $(settings.id+" .day-menu").hide(100);
+            $(settings.id+" td").removeClass("menuActive");
+          }
+          }else if ($(this).attr("id")=="title"){
+          if (!$(e.target).parents(".title-menu").length > 0) {
+            $(settings.id+" .title-menu").hide(100);
+            $(settings.id+" tr").removeClass("menuActive");
+          }
+          }else {
+          $(settings.id+" .title-menu").hide(100);
+          $(settings.id+" .day-menu").hide(100);
+          $(settings.id+" td").removeClass("menuActive");
+          $(settings.id+" tr").removeClass("menuActive");
+          }
+        });
+      
+        // If the menu element is clicked
+        $(settings.id+" .title-menu li, .day-menu li").click(function(){
+          // This is the triggered action name
+          switch($(this).attr("data-action")) {   
+          case "remove": removeEntry(); break;
+          case "refresh": $.get(settings.url, { 'request':"getJson", 'period': settings.period }, null,"json").done(function(d){ Reload(d)}); break;
+          case "clear": console.log($(this)); break;
+          case "oncall": console.log($(this)); break;
+          case "holiday": console.log($(this)); break;
+          }
+          // Hide it AFTER the action was triggered
+          $(settings.id+" .title-menu").hide(100);
+        });
+      
+        $(settings.id+" .title-menu li, .day-menu li").hover(
+          function(){$(this).css("background-color","#DEF")},
+          function(){$(this).css("background-color","#FFF")}
+        );
+      }
+      
+      /*
+       * Show a blank table that covers the table.
+       */
+      function BlankTable(obj) {
+        console.log("BlankTable()");
+        // Get the widrh and height for the gray out area we want to create
+        var h=$(settings.id+" #rota").outerHeight(true);
+        var w=$(settings.id+" #rota").width();
+        if (h<"384px"){ h="385"; }
+        if (w<"0px"){ w="100%"; }
+
+        var tableData= Array(), ele=-1;
+        tableData[++ele]="<div id='rotaBlank'>";
+        tableData[++ele]="  <table id='rota' class='table table-sm'>";
+        tableData[++ele]="    <thead id='rotaHeader'><tr>";
+        tableData[++ele]="      <th colspan='32'>"+obj.title;
+        tableData[++ele]="        <div class='titlebtn' id='rotaBlankClose'><img src='img/close.png' alt='Close'></div>";
+        tableData[++ele]="      </th>";
+        tableData[++ele]="    </tr></thead>";
+        tableData[++ele]="  </table>";
+        tableData[++ele]="</div>";
+        $(settings.id+" #rota").append(tableData.join(''));// Show the form
+      
+        // Attach a click event to the settings page to the close button
+        $(settings.id+" #rotaBlankClose").on("click",function(){
+          $(settings.id+" #rotaBlank").remove();
+        });
+      }
+
+      function BoxPlot(d) {
+        console.log("BoxPlot()");
+        BlankTable(d); // Display a grayed out area
+        totalTable(d);
+      }
+      
+      /*
+       * Show the settings page
+       */ 
+      function Settings(d) {
+        console.log("Settings()");
+        if (settings.force == "ro"){
+          return;
+        } 
+        BlankTable(d); // Display a grayed out area
+      
+        // Add Dialogue to add / remove a user
+        var t=Array(), tp=-1;
+        t[++tp] = "<div id='rotaPick'>";
+        t[++tp] = "  <div class='container-float'>";
+        t[++tp] = "    <div class='row'>";
+        t[++tp] = "      <div class='col-md-4'>";
+        t[++tp] = "        <div class='form-group'>";
+        t[++tp] = "          <label for='settingsAdd'>Add: </label>";
+        t[++tp] = "          <select multiple class='form-control' id='settingsAdd'></select>";
+        t[++tp] = "        </div>";
+        t[++tp] = "        <div class='btn-group'>";
+        t[++tp] = "          <button id='addBtn' class='btn btn-default' type='button'>";
+        t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em>Add >> </button>"; 
+        t[++tp] = "          <button id='deleteBtn' class='btn btn-default' type='button'>";
+        t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em>>> Delete <<</button>"; 
+        t[++tp] = "        </div>";
+        t[++tp] = "      </div>";
+        t[++tp] = "      <div class='col-md-4'>";
+        t[++tp] = "        <div class='form-group'>";
+        t[++tp] = "          <label for='settingsEdit'>Edit: </label>";
+        t[++tp] = "          <select multiple class='form-control' id='settingsEdit'></select>";
+        t[++tp] = "        </div>";
+        t[++tp] = "        <div class='btn-group'>";
+        t[++tp] = "          <button id='editBtn' class='btn btn-default' type='button'>";
+        t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em>>> Edit <<</button>"; 
+        t[++tp] = "        </div>";
+        t[++tp] = "      </div>";
+        t[++tp] = "      <div class='col-md-4'>";
+        t[++tp] = "        <div class='form-group'>";
+        t[++tp] = "          <label for='settingsRemove'>Remove People: </label>";
+        t[++tp] = "          <select multiple class='form-control' id='settingsRemove'></select>";
+        t[++tp] = "        </div>";
+        t[++tp] = "        <div class='btn-group'>";
+        t[++tp] = "          <button id='removeBtn' class='btn btn-default' type='button'>";
+        t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em><< Remove</button>"; 
+        t[++tp] = "        </div>";
+        t[++tp] = "      </div>";
+        t[++tp] = "    </div>";
+        t[++tp] = "  </div>";
+/*        t[++tp] = "  <form id='rotaPickForm'><fieldset id='rotaSettingsLeft'>";
+        t[++tp] = "    <legend>settings</legend>";
+        t[++tp] = "    <p>";
+        t[++tp] = "    <label class='label'>Activate Edit </label>";
+        t[++tp] = "    <select class='field' id='rotaDown'></select></li>";
+        t[++tp] = "    </p>";
+        t[++tp] = "    <p>";
+        t[++tp] = "    <label class='label'>Add Resource </label>";
+        t[++tp] = "    <select class='field' id='newname'></select></li>";
+        t[++tp] = "    <input class='textbox' type='text' id='newname' name='newname' value='Add Person'></input>";
+        t[++tp] = "    <input class='textbutton' id='addnewname' type='button' value='+'>";
+        t[++tp] = "    </p>";
+        t[++tp] = "  </fieldset>";
+        t[++tp] = "<fieldset id='rotaSettingsRight'>";
+        t[++tp] = "    <legend>Colour Theme</legend>";
+        t[++tp] = "    <li><p>";
+        t[++tp] = "        <label class='label'>Day Normal</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#ccffcc'></input>";
+        t[++tp] = "        <label class='label'>Day Reserved</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#ccffcc'></input>";
+        t[++tp] = "        <label class='label'>Day Holiday</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#ccffcc'></input>";
+        t[++tp] = "    </p>";
+        t[++tp] = "    <p>";
+        t[++tp] = "        <label class='label'>Day Normal</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#66b3ff'></input>";
+        t[++tp] = "        <label class='label'>Day Reserved</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#66b3ff'></input>";
+        t[++tp] = "        <label class='label'>Day Holiday</label>";
+        t[++tp] = "        <input class='cfield' type='color' name='rotaDayColor' value='#66b3ff'></input>";
+        t[++tp] = "    </p></li>";
+        t[++tp] = "    </fieldset>";
+        t[++tp] = "  </fieldset></form>";
+        t[++tp] = "</div>";*/
+        $(settings.id+" #rotaBlank").append(t.join(''));// Show the form
+
+        $(settings.id+" #deleteBtn").hide();// Hide the delete button
+
+        // Find out who we are logged in as
+        var auth="";
+        if ($(settings.id).hasAttr("edit")) {
+          auth=$(settings.id).attr("edit");
+        }
+
+        // Populate the Add ist
+        $.get(settings.url,{'request':"getPeople",'rota':'marinesupportoncall' },"","json").done(function(d){
+          $.each(d.people, function(key,value){                // For each person
+            $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsAdd");// Add the name as an option
+          });
+        });
+
+        var numOfPeople = 0;
+        // Populate the Remove list
+        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.each(d.people, function(key,value){                // For each person
+            $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsRemove");// Add the name as an option
+            $(settings.id+" #settingsAdd option:contains('"+value.name+"')").remove();
+            ++numOfPeople;
+          });
+        });
+
+        // Populate the Edit list
+        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.each(d.people, function(key,value){                // For each person
+            if (auth != value.name) {
+              $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsEdit");// Add the name as an option
+            }
+          });
+        });
+
+        // Add a person to the rota
+        $(settings.id+" #addBtn").on("click",function(){
+          addEntry();
+          $.each($(settings.id+" #settingsAdd option:selected"), function(){
+            var who = $(this).text();
+            $('<option>').text(who).appendTo("#settingsRemove");
+            $('<option>').text(who).appendTo("#settingsEdit");
+            $(settings.id+" #settingsAdd option:contains('"+who+"')").remove();
+          }); 
+          $(settings.id+" #rotaBlank").remove();
+        });
+
+        // Remove a person from the rota
+        $(settings.id+" #removeBtn").on("click",function(){
+          removeEntry();
+          $.each($(settings.id+" #settingsRemove option:selected"), function(){
+            var who = $(this).text();
+            $('<option>').text(who).appendTo("#settingsAdd");
+            $(settings.id+" #settingsRemove option:contains('"+who+"')").remove();
+            $(settings.id+" #settingsEdit option:contains('"+who+"')").remove();
+          }); 
+          $(settings.id+" #rotaBlank").remove();
+        });
+
+        if (numOfPeople == 0){
+          $(settings.id+" #deleteBtn").show();// Hide the delete button
+          $(settings.id+" #deleteBtn").on("click",function(){
+            $.get(settings.url,{'request':"deletePeriod",'period':settings.period },"","json");
+            $(settings.id+" #rotaBlank").remove();
+            changePeriod(settings.period, "previous");
+          });
+        }
+        // If the person is changed in the selector, reload the page data
+        $(settings.id+" #editBtn").on("click",function(){
+          $(settings.id+" #rota #RotaCurrentEntryEdit").remove();
+          $(settings.id+" #rota").prepend("<div id='RotaCurrentEntryEdit'</div>");
+          $.each($(settings.id+" #settingsEdit option:selected"), function(){
+            var who = $(this).text();
+            $('<p>').text(who).appendTo("#RotaCurrentEntryEdit");
+          }); 
+          $(settings.id+" #RotaCurrentEntryEdit").hide();
+          Reload(d)
+          $(settings.id+" #rotaBlank").remove();
+        });
+      }
+      
+      /*
+       * Change the date period being shown in the graph
+       */
+      function changePeriod(date, when) {
+        console.log("changePeriod("+date+" , "+when+")");
+        if( when == "previous" ){
+          settings.period=Number(date-86400); // Subtract 1 day
+        } else if ( when == "next" ){
+          settings.period=Number(date+86400); // Add 1 day
+        }
+        console.log(settings.period);
+        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $(settings.id+" #rota").remove(); // Remove any existing rota that is already on the page for this ID
+          main();
+        }).fail(function(xhr,st,err){
+          if (settings.force == "rw") {
+            document.title = "Create New Period";                                // Set the document title
+            newMonth(settings.period);
+          } else {
+            document.title = "No Period Available";                                // Set the document title
+            noRotaBanner();
+          }
+        }); 
+      }
+
+      function errorMessage(text){
+          console.log(text);
+      }
+
+      function SendMail(obj){
+        var type="single";
+        if (settings.user=="admin"){
+           type="multi";
+        }
+        var user_id=$(settings.id).attr("uid");
+        $.get(settings.url,{'request':"email",'rota':"marinesupportoncall",'type':type,'user_id':user_id,'period':settings.period},null,"json").done(function(d){
+          // do nothing
+        }).fail(function(xhr,st,err){ 
+          errorMessage("Failed to send email");
+        });
+         
+      }
+
+      function updateTotals(obj){
+        console.log("updateTotals(obj)");
+        $(settings.id+" tr#totals").hide();
+        $(settings.id+" tr#totals").remove();
+        var startDate=new Date(obj.start).getTime(),endDate=new Date(obj.end).getTime(),sday=Number((60*60*24)*1000);
+
+        // Initialise a date object
+        var today=new Date();
+        // Get the date object in UTC
+        today = new Date(today.getUTCFullYear(), 
+                     today.getUTCMonth(),
+                     today.getUTCDate(),
+                     today.getUTCHours(),
+                     today.getUTCMinutes(),
+                     today.getUTCSeconds());
+        // Get day of month
+        var UTCDom=today.getUTCDate();
+        var UTCMonth=today.getUTCMonth()+1;
+        var UTCYear=today.getUTCFullYear();
+
+        var iter=0;
+        var tableData=Array(),ele=-1;
+        var objKeys = Object.keys(obj.people).map(function(k){ return obj.people[k]}).sort();
+        for (idx=0;idx<totalDays;idx++){totals[idx]=Number(0)}
+        $.each(objKeys, function(key,value){                       // For each person in the json data
+          for(day=0;day<totalDays;day++){
+            if (value.data.booked[day]==1){
+              var num = Number(1);
+              if (Number(num)){num=Number(num)}else{num=0}
+              totals[day]=num+Number(totals[day]);
+            } else if(value.data.booked[day]==2){
+              var num = Number(0.5);
+              if (Number(num)){num=Number(num)}else{num=0}
+              totals[day]=num+Number(totals[day]);
+            }
+          }
+        });
+        totalDays=0;
+        
+        tableData[++ele] = "<tr id='totals'><td>Totals</td>";
+        var iter=0;
+        for (day=startDate;day<=endDate;day=day+sday){
+          ++totalDays;
+          var weekend="no", p=new Date(); p.setTime(day);
+          p = new Date(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), p.getUTCHours(), p.getUTCMinutes(), p.getUTCSeconds());
+          var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="",count=Number(),state="available";
+          var who="";
+          if(d==0||d==6){weekend="yes"};
+          if(weekend=="yes") {
+            count=+Number(totals[iter]*1);
+            c = c.concat("weekend ");
+          }else{
+            count=+Number(totals[iter]*0.5);
+          }
+          if(totals[iter] > 1){
+            state="overbooked";
+            c=c.concat("overbooked");
+          }else if(totals[iter]==1){
+            state="booked";
+            c=c.concat("oncall ");
+          }else{
+            state="available";
+            c=c.concat("available ");
+          }
+
+          if (UTCDom == dom & UTCMonth == m & UTCYear == y ) {
+            c=c.concat("today ");
+          }
+          tableData[++ele]="<td weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+"'>"+count+"</td>";
+          ++iter;
+        }
+        tableData[++ele] = "</tr>";
+        var row=tableData.join('');   // Add the table with rotaHeader to the document.
+        $(settings.id+" tr.r:last").after(row);
+      }
+
+      /*
+       * Build the initial table, just the date range and period for the table, no data is added at this point
+       */ 
+      function initTable(obj) {
+        console.log("initTable()");      
+
+        $(settings.id+" #rota").remove()                            // Remove if it already exists
+        document.title = obj.title;                                // Set the document title
+        tableData = new Array(), ele=-1;                           // Create an array to store the table inside
+
+        // Get the start and the end date from the JSON data
+        var startDate=new Date(obj.start).getTime(),endDate=new Date(obj.end).getTime(),sday=Number((60*60*24)*1000),totalDays=0;
+        // Initialise a date object
+        var today=new Date();
+        // Get the date object in UTC
+        today = new Date(today.getUTCFullYear(), 
+                     today.getUTCMonth(),
+                     today.getUTCDate(),
+                     today.getUTCHours(),
+                     today.getUTCMinutes(),
+                     today.getUTCSeconds());
+        // Get day of month
+        var UTCDom=today.getUTCDate();
+        var UTCMonth=today.getUTCMonth()+1;
+        var UTCYear=today.getUTCFullYear();
+
+        tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th colspan='40'>"+obj.title+"</th></tr></thead>";
+        tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th class='col-md-12' id='daytitle'>Day</th>";
+        for (day=startDate;day<=endDate;day=sday+day){
+          var weekend="no", today="", p=new Date();
+          p.setTime(day);
+          p = new Date(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), p.getUTCHours(), p.getUTCMinutes(), p.getUTCSeconds());
+          var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="";
+          if (d==0 || d==6){ weekend="yes"; c="weekend"; } else { weekend="no" };
+          if (dom == UTCDom & m== UTCMonth & y == UTCYear) { today="today" } else { today="" } 
+          tableData[++ele]="<th class='p "+c+" "+today+"' year='"+y+"' month='"+m+"' day='"+d+"' id='"+totalDays+"' weekend='"+weekend+"'>"+dom+"</th>";
+          ++totalDays;                                             // Keep a count of the total days in the rota period
+        }
+        tableData[++ele]="</tr>";                                  // Close the row
+        for (idx=0;idx<totalDays;idx++){totals[idx]=Number(0)}     // Reset the totals array
+
+        // Sort the table asc or desc
+        var objKeys = Object;
+        if (settings.sort == "asc"){
+          objKeys = Object.keys(obj.people).map(function(k){ 
+            return obj.people[k]
+          }).sort(function(a, b){ 
+            return a['name']<b['name']? 1:a['name']>b['name']?-1:0;
+          });
+        } else {
+          objKeys = Object.keys(obj.people).map(function(k){ 
+            return obj.people[k]
+          }).sort(function(a, b){ 
+            return a['name']>b['name']? 1:a['name']<b['name']?-1:0;
+          });
+        }
+        // Build the table, adding assets as rows
+        $.each(objKeys, function(key, value){                       // For each person in the json data
+          // For each day in the range
+          for(day=0; day<totalDays; day++){
+            // If the json data has this day as booked then update totals
+            if (value.data.booked[day]==1){
+              var num = Number(1);
+              if (Number(num)){num=Number(num)}else{num=0}
+              totals[day]=num+Number(totals[day]);
+            } else if(value.data.booked[day]==2){
+              var num = Number(0.5);
+              if (Number(num)){num=Number(num)}else{num=0}
+              totals[day]=num+Number(totals[day]);
+            }
+          }
+          value.data.booked[day] // Spurious line - remove?
+          // Add a row
+          tableData[++ele]="<tr class='r' id='"+value.name+"'>";   // Add a row
+
+          // Month Start Time
+          var mstime=startDate;
+
+          // For each day (eday) in the range
+          for(var eday=0;eday<totalDays;eday++){
+            // Get a time variable t (date object)
+            var t=new Date();
+            // Set the date object to the month start time
+            t.setTime(mstime);
+            // Ensure this is in UTC
+            t = new Date(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate(), t.getUTCHours(), t.getUTCMinutes(), t.getUTCSeconds());
+            // Get the variables from the date object
+            var d=t.getUTCDay(), y=t.getUTCFullYear(), m=t.getUTCMonth()+1,c="available ";
+            // Figure out if we are on a weekend
+            if (d==0 || d==6){ weekend="yes"; c=c.concat("weekend ")} else { weekend="no" };
+            // Add a cell to the table for the day
+            tableData[++ele]="<td class='n "+c+"' year="+y+" month="+m+" day="+d+" id='day"+eday+"' weekend='"+weekend+"' value='F'></td>";
+            // Add a day onto the month start time
+            mstime=mstime+Number(60*60*24*1000);
+            // Goto next iteration of for loop until each day has been sorted.
+          }
+          // End the row
+          tableData[++ele]="</tr>";
+        });
+
+        // Add a totals row
+        tableData[++ele] = "<tr id='totals'><td>Totals</td>";
+
+        var iter=0;
+        for (day=startDate;day<=endDate;day=day+sday){
+          var weekend="no", p=new Date(); p.setTime(day);
+          p = new Date(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), p.getUTCHours(), p.getUTCMinutes(), p.getUTCSeconds());
+          var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="",count=Number(),state="available";
+          var who="";
+          if(d==0||d==6){weekend="yes"};
+          if(weekend=="yes") {
+            count=+Number(totals[iter]*1);
+            c = c.concat("weekend ");
+          }else{
+            count=+Number(totals[iter]*0.5);
+          }
+          if(totals[iter] > 1){
+            state="overbooked";
+            c=c.concat("overbooked");
+          }else if(totals[iter]==1){
+            state="booked";
+            c=c.concat("oncall ");
+          }else{
+            state="available";
+            c=c.concat("available ");
+          }
+          tableData[++ele]="<td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
+          ++iter;
+        }
+        tableData[++ele] = "</tr>";
+        tableData[++ele]="</tbody></table>";  // Close the table
+
+        if (settings.force=="rw"){
+          // Context menu
+          tableData[++ele]="<div id='menu'>";
+          tableData[++ele]="  <ul class='title-menu'>";
+          tableData[++ele]="    <li data-action='remove'>Remove</li>";
+          tableData[++ele]="    <li data-action='refresh'>Refresh</li>";
+          tableData[++ele]="  </ul>";
+          tableData[++ele]="  <ul class='day-menu'>";
+          tableData[++ele]="    <li data-action='clear'>Reset Day</li>";
+          tableData[++ele]="    <li data-action='oncall'>On Call</li>";
+          tableData[++ele]="    <li data-action='holiday'>Holiday</li>";
+          tableData[++ele]="  </ul>";
+          tableData[++ele]="</div>";
+
+          tableData[++ele]="<div id='multitype' class='modal'>";
+          tableData[++ele]="  <div class='modal-content'>";
+          tableData[++ele]="    <span class='close'>&times;</span>";
+          tableData[++ele]="    <h2>Select Booking</h2>";
+          tableData[++ele]="    <form><select id='eventlist'><option>1</option></select></form>";
+          tableData[++ele]="  </div>";
+          tableData[++ele]="</div>";
+        }
+
+        // Add the table with rotaHeader to the document.
+        $(settings.id).html(tableData.join('')); 
+
+
+        $(settings.id+" tbody#days tr#dh #daytitle").css("cursor","pointer");
+        $(settings.id+" tbody#days tr#dh #daytitle").on("click", function(){
+          if ( settings.sort == "asc"){
+            settings.sort = "desc";
+            $(this).remove(settings.id+" #sortbtn");
+//            $(this).append("<div class='sortbtn' id='rotaPreviousButton'><img src='img/before.png' /></div>");
+          } else if (settings.sort == "desc"){
+            $(this).remove(settings.id+" #sortbtn");
+            settings.sort = "asc"; 
+//            $(this).append("<div class='sortbtn' id='rotaPreviousButton'><img src='img/after.png' /></div>");
+          }
+          
+          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+            loading("start");
+            initTable(d);
+            Reload(d);
+            setTimeout(function(){loading("stop")}, 300);
+          });
+          console.log("Sort: "+settings.sort);
+        });
+
+        // Set the style for the menu not in .css file"
+        $(settings.id+" .title-menu, .day-menu").css({
+          "display": "none","position": "absolute",
+          "border": "1px solid #CCC","white-space": "nowrap",
+          "font-family": "sans-serif", "background": "#FFF","color": "#333","border-radius": "5px", "padding": "5px"
+        });
+        // Set the style for the menu not in .css file!
+        $(settings.id+" .title-menu li, .day-menu li").css({
+          "padding": "8px 12px","cursor": "pointer","list-style-type": "none","transition": "all .3s ease"
+        });
+
+        // If read write permissions enabled: 
+        if (settings.force == "rw"){
+          var mouseDown = false;
+          var multi=[];
+
+          // Deal with click and drag here
+          $(settings.id+" table#rota tr td.n").bind("mousedown touchstart", function(event){
+            event.preventDefault();
+            var element = document.elementFromPoint(event.pageX, event.pageY);
+            var who_start = $(element).parent().closest("tr").attr("id");
+            mouseDown = true;
+  
+            $(settings.id+" table#rota tr td.n").bind("mousemove touchmove", function(event){
+              event.preventDefault();
+              if (mouseDown == true){
+                var element = document.elementFromPoint(event.pageX, event.pageY);
+                var who_current = $(element).parent().closest("tr").attr("id");
+                if (who_current == who_start) {
+                  idx= $(element).index();
+      //            $(element).addClass("multi");
+                  if (multi[idx] == undefined ) {
+                    multi.push(idx);
+                  } 
+                }
+              }
+            });
+
+            $(settings.id+" table#rota tr td.n").bind("mouseup touchend", function(){
+              var element = document.elementFromPoint(event.pageX, event.pageY);
+              var who_current = $(element).parent().closest("tr").attr("id");
+              if (who_current == who_start) {
+                $(settings.id+" table#rota tr td.n").unbind("mousemove touchmove");
+                //console.log("Start on: "+idx_start+" Finish on: "+idx_end);
+                console.log(multi.length);
+                if (multi.length > 0) {
+//                  $("#multitype").css("display", "block");
+//                  $("#multitype span.close").on("click", function(){
+//                    $("#multitype").css("display", "none");
+//                  });
+//                  console.log(multi);
+                  //processField( $(element) );
+                  $(element).removeClass("multi");
+                  
+                }
+                mouseDown = false;
+                multi=[];
+              }
+            });
+          });
+        }
+        $(settings.id+" td.n").click(function( event){
+          processField( this );
+        });
+
+        // Add menu buttons
+        $(settings.id+" #rota thead#rotaHeader tr th").append("<div class='titlebtn' id='rotaPreviousButton'><img src='img/before.png' /></div>");
+        $(settings.id+" #rota thead#rotaHeader tr th").append("<div class='titlebtn' id='rotaNextButton'><img src='img/after.png' /></div>");
+        if (settings.force=="rw") {
+          $(settings.id+" #rota thead#rotaHeader tr th").append("<div class='titlebtn' id='rotaSettingsButton'><img src='img/settings.png' alt='Settings'></div>");
+          $(settings.id+" #rota thead#rotaHeader tr th").append("<div class='titlebtn' id='rotaMailButton'><img src='img/message.png' alt='Mail'></div>");
+          $(settings.id+" #rotaSettingsButton").on("click",function(){ Settings(obj);});
+          $(settings.id+" #rotaMailButton").on("click",function(){ SendMail(obj);});
+        }
+        $(settings.id+" #rota thead#rotaHeader tr th").append("<div class='titlebtn' id='rotaGraphButton'><img src='img/graph.png' alt='Graph'></div>");
+        $(settings.id+" #rotaGraphButton").on("click",function(){ BoxPlot(obj);});
+        var startp=Math.round(Date.parse(obj.start)/1000);
+        var endp=Math.round(Date.parse(obj.end)/1000);
+        $(settings.id+" #rotaPreviousButton").on("click",function(){changePeriod(startp,"previous")});
+        $(settings.id+" #rotaNextButton").on("click",function(){changePeriod(endp,"next")});
+      }
+
+      function processField( what ) {
+        console.log("processField("+$(what).index()+")");
+        var state=$(what).attr("value");
+        var editable=$(what).parent().attr("editable");
+        var data;
+        var idx=$(what).index();
+        var otherpeople=$(settings.id+" tr#totals td").eq(idx).attr("state");
+        var who=$(settings.id+" tr#totals td").eq(idx).attr("who");
+        var me=$(what).parent().attr("id");
+        if (editable=="T"){
+          $(what).removeClass("available").removeClass("weekend").removeClass("holiday").removeClass("oncall").removeClass("pending");
+          $(what).addClass("pending");
+          if(state=="F"){       data=1;
+          }else if(state=="O"){ data=2;
+          }else if(state=="1"){ data=3;
+          }else{                data=0;}
+          var idx=$(what).attr("id").match(/\d+/)[0];
+          var who=$(what).parent().attr("id");
+          $.get(settings.url, { request:"savePerson", 'person': who, 'period': settings.period, 'i': idx, 'd':data }, null,"json");
+        } else if (state=="O"){
+          index=$(what).index();
+          day=$(settings.id+' tr#dh th.p').eq(index-1).text(); // Get the day for the taken cell clicked on.
+          who=$(what).parent().text();        // Get the name of the person who has the day
+          console.log("Taken by "+who+" :"+day);
+        }
+        setTimeout(function(){
+          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+            Reload(d);
+          });
+        },100);
+      }
+
+      function noRotaBanner() {
+        $(settings.id+" #rota").remove(); // Remove any existing rota that is already on the page for this ID
+        var t=Array(), tp=-1;
+        t[++tp] = "<div id='rota'>";
+        t[++tp] = "<p>Unfortunatley there is no rota available at the moment!</p>";
+        t[++tp] = "<BR/>";
+        t[++tp] = "<p>Please contact your manager to start the next period.</p>";
+        t[++tp] = "</div>";
+        $(settings.id).append(t.join(''));// Show the form
+
+      }
+
+      /*
+       * Main function.
+       */ 
+      function main(){
+          if (settings.period=="today"){
+            var tp=Math.round(Date.now()/1000);  // On Startup. look for the current period
+            settings.period=tp;                  // Set the period for this rota
+          }
+          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+            $(settings.id+" #rota").remove(); // Remove any existing rota that is already on the page for this ID
+            switch(settings.action) {
+              case ("rota"):
+                loading("start");
+                initTable(d);                  // Create the initial table rotaHeaders without any data
+                Reload(d);                         // Reload the table to ensure the latest data is shown
+                setTimeout(function(){loading("stop")}, 300);
+                break;
+              case ("config"):
+                loading("start");
+                initTable(d);                  // Create the initial table rotaHeaders without any data
+                Reload(d);                         // Reload the table to ensure the latest data is shown
+                Settings(d);
+                loading("stop");
+                break;
+              case ("graph"):
+                loading("start");
+                initTable(d);                  // Create the initial table rotaHeaders without any data
+                Reload(d);                         // Reload the table to ensure the latest data is shown
+                BoxPlot(d);
+                loading("stop");
+                break;
+              default:
+                loading("start");
+                initTable(d);                  // Create the initial table rotaHeaders without any data
+                Reload(d);                         // Reload the table to ensure the latest data is shown
+                loading("stop");
+                break;
+            }  
+          }).fail(function(xhr,st,err){ 
+            if (settings.force == "rw") {
+              document.title = "Create New Period";                                // Set the document title
+              newMonth(settings.period);
+            } else {
+              document.title = "No Period Available";                                // Set the document title
+              noRotaBanner();
+            }
+          });
+      }
+      main();
+      // Update the table every 1800000ms (30mins)
+      window.setInterval(function(){
+          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+            Reload(d);
+          });
+         /// call your function here
+      }, 1800000);
+  
+  
+
+      return;
+  }
+}( jQuery ));
+$("#cal1").rota({id: "#cal1", lastUpdate: "#lastUpdateTime" });
+$("#calnoedit").rota({id: "#calnoedit", force: "ro", lastUpdate: "#lastUpdateTime" });
+
+//$("#cal1").rota({ period:"1455840000"});
+//$("#cal1").rota({ action:"config"});
+//$("#cal1").rota({ action:"config", id:"#cal3", period:"1453161600"});
