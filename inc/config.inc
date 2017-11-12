@@ -29,13 +29,13 @@
  * These are the database login details
  */
 define("HOST", "localhost"); 			// The host you want to connect to. 
-define("USER", "adamford_user"); 		// The database username. 
-define("PASSWORD", "tXwv}UwZmz*("); 	// The database password. 
-define("DATABASE", "adamford_login");   // The database name.
+#define("USER", "rota"); 		// The database username. 
+#define("PASSWORD", "rota"); 	// The database password. 
+#define("DATABASE", "rota");   // The database name.
 
-//define("USER", "rota"); 		// The database username. 
-//define("PASSWORD", "rota"); 	// The database password. 
-//define("DATABASE", "rota");             // The database name.
+define("USER", "rota"); 		// The database username. 
+define("PASSWORD", "rota"); 	// The database password. 
+define("DATABASE", "rota");             // The database name.
 
 /**
  * Who can register and what the default role will be
