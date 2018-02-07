@@ -149,9 +149,13 @@
             console.log("IN ENG");
             var matches = eng.match(/\b(\w)/g);
             console.log(matches);
-            var initials = matches.join(' ');
-	    engineer[eng] = ({ value: val, name: initials });
-            k[++kp]="  <tr role='row'><td>"+initials+"</td><td>"+eng+"</td></tr>";
+	    if (0 === matches.length) {
+	        logging.debug("None for "+initials)
+            } else {
+                var initials = matches.join(' ');
+                engineer[eng] = ({ value: val, name: initials });
+                k[++kp]="  <tr role='row'><td>"+initials+"</td><td>"+eng+"</td></tr>";
+            }
           } else { engineer[eng].value+= +val; }
           console.log("After ENG");
         });
