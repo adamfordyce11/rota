@@ -65,8 +65,8 @@ td.right, th.right { min-width:300px;}
 .available.weekend.today { background-color:#ffaa80; }
 .total                   { background-color:#ff0000; }
 .total.weekend           { background-color:#ff0000; }
-.total.today             { background-color:#800000; }
-.total.weekend.today     { background-color:#800000; }
+.total.today             { background-color:#ffaa80; }
+.total.weekend.today     { background-color:#ffaa80; }
 .total.oncall            { background-color:#c0c0c0; }
 .total.oncall.weekend    { background-color:#808080; }
 .total.oncall.today      { background-color:#ffaa80; }

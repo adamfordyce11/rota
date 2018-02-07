@@ -142,7 +142,8 @@
           var eng = ($(this).find(".engineer").text());
 	  if (!(eng in engineer)){
             var matches = eng.match(/\b(\w)/g);
-            var initials = matches.join('');
+            console.log(matches);
+            var initials = matches.join(' ');
 	    engineer[eng] = ({ value: val, name: initials });
             k[++kp]="  <tr role='row'><td>"+initials+"</td><td>"+eng+"</td></tr>";
           } else { engineer[eng].value+= +val; }
