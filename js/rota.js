@@ -864,7 +864,9 @@
           tableData[++ele]="</tr>";
         });
 
+        tableData[++ele]="</tbody></table>";  // Close the table
         // Add a totals row
+        tableData[++ele] = "<table><tbody>";
         tableData[++ele] = "<tr id='totals'><td>Totals</td>";
 
         var iter=0;
@@ -890,7 +892,7 @@
             state="available";
             c=c.concat("available ");
           }
-          tableData[++ele]="<td></td><td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
+          tableData[++ele]="<td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
           ++iter;
         }
         tableData[++ele] = "</tr>";
