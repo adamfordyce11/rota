@@ -8,29 +8,37 @@ function parse_get($dirty){
 }
 
 function getFile($period){
-  $indir=array_filter(scandir("data"),function($item){
-    return is_file("data/" . $item);
-  });
-  foreach($indir as $key=>$value) {
-    if ($value !=="^." && $value !==".."){
-      @preg_match_all("/\d+-\d+-\d+/", $value, $matches); // Get date from filename
-      @list($startString,$endString)=$matches[0];         // Get start and end date dd-mm-yyyy
-      date_default_timezone_set('UTC');
-      $s=date_parse_from_format("d-m-Y",$startString);
-      $e=date_parse_from_format("d-m-Y",$endString);
-      $start_ts = mktime(0,0,0,$s['month'],$s['day'],$s['year']);
-      $end_ts = mktime(23,59,59,$e['month'],$e['day'],$e['year']);
-      $now_ts = $period;
-      $tmp = time();
-      if (($now_ts >= $start_ts) && ($now_ts <= $end_ts)){
-        return $value;
+  try {
+    $indir=array_filter(scandir("data"),function($item){
+      return is_file("data/" . $item);
+    });
+  
+    foreach($indir as $key=>$value) {
+      if ($value !=="^." && $value !==".."){
+        @preg_match_all("/\d+-\d+-\d+/", $value, $matches); // Get date from filename
+        @list($startString,$endString)=array_pad($matches[0], 2, null);         // Get start and end date dd-mm-yyyy
+        date_default_timezone_set('UTC');
+        $s=date_parse_from_format("d-m-Y",$startString);
+        $e=date_parse_from_format("d-m-Y",$endString);
+        $start_ts = mktime(0,0,0,$s['month'],$s['day'],$s['year']);
+        $end_ts = mktime(23,59,59,$e['month'],$e['day'],$e['year']);
+        $now_ts = $period;
+        $tmp = time();
+        if (($now_ts >= $start_ts) && ($now_ts <= $end_ts)){
+          return $value;
+        } else {
+          $p=date("d-m-Y",$period);
+        }
       } else {
-        $p=date("d-m-Y",$period);
+          error_log("Failed");
+          return false;
       }
-    } else {
-        error_log("Failed");
-        return false;
     }
+  }
+  
+  catch(Exception $e) {
+    error_log("Exception Raised");
+    error_log("Error ".$e->getMessage());
   }
 }
 
@@ -254,6 +262,7 @@ function createPeriod() {
         $persons['people'][++$idx] = $content;
       }
     }
+    error_log(json_encode($persons));
     file_put_contents("data/$file", json_encode($persons));
   }
 }
@@ -283,7 +292,7 @@ function getLastEntry() {
   foreach($indir as $key=>$value) {
     if ($value !=="." && $value !==".." && $value !== ".htaccess" ){
       preg_match_all("/\d+-\d+-\d+/", $value, $matches); // Get date from filename
-      list($startString,$endString)=$matches[0];         // Get start and end date dd-mm-yyyy
+      @list($startString,$endString)=array_pad($matches[0], 2, null);         // Get start and end date dd-mm-yyyy
       $e=date_parse_from_format("d-m-Y",$endString);
       $end_ts = mktime(23,59,59,$e['month'],$e['day'],$e['year']); // End of day @ 23:59:59
       array_push($a,$end_ts);
