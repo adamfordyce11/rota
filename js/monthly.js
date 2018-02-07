@@ -140,6 +140,9 @@
         $(options.id+" #monthly tbody#days tr.r").each(function(){
           console.log("Options");
           var val = Number($(this).find(".claim").text());
+	  if isEmpty(val) {
+              val = 0;
+          }
           var eng = ($(this).find(".engineer").text());
           console.log("FIND");
 	  if (!(eng in engineer)){
