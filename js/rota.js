@@ -756,7 +756,7 @@
           if (UTCDom == dom & UTCMonth == m & UTCYear == y ) {
             c=c.concat("today ");
           }
-          tableData[++ele]="<td weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+"'>"+count+"</td>";
+          tableData[++ele]="<td weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+"'></td>";
           ++iter;
         }
         tableData[++ele] = "</tr>";
