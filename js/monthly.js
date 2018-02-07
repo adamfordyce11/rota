@@ -149,7 +149,7 @@
             console.log("IN ENG");
             var matches = eng.match(/\b(\w)/g);
             console.log(matches);
-	    if (0 === matches.length) {
+	    if (!matches) {
 	        logging.debug("None for "+initials)
             } else {
                 var initials = matches.join(' ');
