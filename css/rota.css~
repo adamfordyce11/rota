@@ -69,7 +69,7 @@ td.right, th.right { min-width:300px;}
 .total.weekend.today     { background-color:#ffaa80; }
 .total.oncall            { background-color:#c0c0c0; }
 .total.oncall.weekend    { background-color:#808080; }
-.total.oncall.today      { background-color:#ffaa80; }
+.total.oncall.today      { background-color:#800000; }
 .total.oncall.weekend.today { background-color:#ffaa80; }
 .pending                 { background-color:#FF3300; }
 .overbooked              { background-color:#ff0000; }
