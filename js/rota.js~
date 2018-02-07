@@ -300,9 +300,12 @@
         var UTCDom=today.getUTCDate();
         var UTCMonth=today.getUTCMonth()+1;
         var UTCYear=today.getUTCFullYear();
-
+	var hh = today.getUTCHours()
+	var mm = tody.getUTCMinutes()
+	var ss = today.getUTCSeconds()
+	
         // Update the last update time 
-        $(settings.lastUpdate).text(today);
+        $(settings.lastUpdate).text(UTCDom+"/"+UTCMonth+"/"+UTCYear+" @ "+hh+":"+mm+":"+ss);
 
         $.get(settings.url, { 'request':"getJson", 'period': settings.period }, null,"json").done(function(d){
           $(settings.id+" tr.r").each(function(){
