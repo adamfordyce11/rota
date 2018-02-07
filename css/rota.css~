@@ -237,7 +237,7 @@ td.right, th.right { min-width:300px;}
 }
 
 #rotaTotalsTable {
-  margin-top: 10%;
+
 }
 
  /* The Modal (background) */

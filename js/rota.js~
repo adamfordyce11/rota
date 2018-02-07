@@ -864,8 +864,9 @@
           tableData[++ele]="</tr>";
         });
 
+        tableData[++ele]="</tbody></table>";  // Close the table
         // Add a totals row
-        tableData[++ele] = "<table><tbody>";
+        tableData[++ele] = "<table id='totalstbl'><tbody>";
         tableData[++ele] = "<tr id='totals'><td>Totals</td>";
 
         var iter=0;
