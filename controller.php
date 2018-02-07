@@ -68,8 +68,9 @@ function removePerson() {
       }
     }
     $json_a['people'] = $array;
-    $json=json_encode($json_a);
-    file_put_contents("data/$file", $json);
+    $fp = fopen("data/$file", 'w');
+    fwrite($fp, json_encode($json_a));
+    fclose($fp);
     getJson();
   }
 }
@@ -94,8 +95,9 @@ function addPerson() {
     $new=array( "name"=>"$name","data"=>$data);
     array_push($array,$new);
     $json_a['people'] = $array;
-    $json=json_encode($json_a);
-    file_put_contents("data/$file", $json);
+    $fp = fopen("data/$file", 'w');
+    fwrite($fp, json_encode($json_a));
+    fclose($fp);
     getJson();
   }
 }
@@ -124,8 +126,9 @@ function savePerson() {
         $json_a['people'][$peopleidx]['data']['booked'] = $array;
         $perms = substr(sprintf('%o', fileperms('/var/www/supportrota/data/'.$file)), -4);
         error_log($perms);
-        $data = json_encode($json_a);
-        $ret = file_put_contents("data/$file", $data, LOCK_EX);
+	$fp = fopen("data/$file", 'w');
+	fwrite($fp, json_encode($json_a));
+	fclose($fp);
       }
     }
   }
@@ -254,7 +257,9 @@ function createPeriod() {
         $persons['people'][++$idx] = $content;
       }
     }
-    file_put_contents("data/$file", json_encode($persons));
+    $fp = fopen("data/$file", 'w');
+    fwrite($fp, json_encode($persons));
+    fclose($fp);
   }
 }
 
