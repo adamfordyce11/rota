@@ -138,15 +138,19 @@
         k[++kp]="  </tr>";
         var engineer=Array();
         $(options.id+" #monthly tbody#days tr.r").each(function(){
+          console.log("Options");
           var val = Number($(this).find(".claim").text());
           var eng = ($(this).find(".engineer").text());
+          console.log("FIND");
 	  if (!(eng in engineer)){
+            console.log("IN ENG");
             var matches = eng.match(/\b(\w)/g);
             console.log(matches);
             var initials = matches.join(' ');
 	    engineer[eng] = ({ value: val, name: initials });
             k[++kp]="  <tr role='row'><td>"+initials+"</td><td>"+eng+"</td></tr>";
           } else { engineer[eng].value+= +val; }
+          console.log("After ENG");
         });
         k[++kp]="</table>";
         var total=0;
