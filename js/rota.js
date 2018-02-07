@@ -890,7 +890,7 @@
             state="available";
             c=c.concat("available ");
           }
-          tableData[++ele]="<td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
+          tableData[++ele]="<td></td><td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
           ++iter;
         }
         tableData[++ele] = "</tr>";

@@ -301,7 +301,7 @@
         var UTCMonth=today.getUTCMonth()+1;
         var UTCYear=today.getUTCFullYear();
 	var hh = today.getUTCHours()
-	var mm = tody.getUTCMinutes()
+	var mm = today.getUTCMinutes()
 	var ss = today.getUTCSeconds()
 	
         // Update the last update time 
