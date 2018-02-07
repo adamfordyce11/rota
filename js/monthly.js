@@ -150,7 +150,7 @@
             var matches = eng.match(/\b(\w)/g);
             console.log(matches);
 	    if (!matches) {
-	        logging.debug("None for "+initials)
+	        console.log("None for "+initials)
             } else {
                 var initials = matches.join(' ');
                 engineer[eng] = ({ value: val, name: initials });
