@@ -892,7 +892,8 @@
             state="available";
             c=c.concat("available ");
           }
-          tableData[++ele]="<td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '>"+count+"</td>";
+          // Removed +count+ from the td
+          tableData[++ele]="<td data-toggle='modal' weekend='"+weekend+"' who='"+who+"'type='total' state='"+state+"' class='"+c+" '></td>";
           ++iter;
         }
         tableData[++ele] = "</tr>";
