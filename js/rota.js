@@ -735,6 +735,7 @@
           p = new Date(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), p.getUTCHours(), p.getUTCMinutes(), p.getUTCSeconds());
           var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="",count=Number(),state="available";
           var who="";
+          c = c.concat("total ");
           if(d==0||d==6){weekend="yes"};
           if(weekend=="yes") {
             count=+Number(totals[iter]*1);
@@ -875,6 +876,7 @@
           p = new Date(p.getUTCFullYear(), p.getUTCMonth(), p.getUTCDate(), p.getUTCHours(), p.getUTCMinutes(), p.getUTCSeconds());
           var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="",count=Number(),state="available";
           var who="";
+          c = c.concat("total ");
           if(d==0||d==6){weekend="yes"};
           if(weekend=="yes") {
             count=+Number(totals[iter]*1);
