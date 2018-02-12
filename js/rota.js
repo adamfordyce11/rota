@@ -350,12 +350,12 @@
                     r.addClass("weekend").addClass("oncall");
                     r.attr("title","On Call (Weekend)");
                     r.text("1");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/full_star.png'>");
+                    r.html("<img style='width:18px;height:18px;vertical-align:middle;' src='img/full_star.png'>");
                   } else {
                     r.addClass("oncall");
                     r.attr("title","On Call (Weekday)");
                     r.text("0.5");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/half_star.png'>");
+                    r.html("<img style='width:18px;height:18px;vertical-align:middle;' src='img/half_star.png'>");
                   }
                 } else if (data==2){
                   r.attr("value","1");
@@ -363,21 +363,21 @@
                     r.addClass("weekend").addClass("oncall");
                     r.attr("title","On Call (Weekend)");
                     r.text("0.5");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/full_star.png'>");
+                    r.html("<img style='width:18px;height:18px;vertical-align:middle;' src='img/full_star.png'>");
                   } else {
                     r.addClass("oncall");
                     r.attr("title","On Call (Weekday)");
                     r.text("0.25");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/half_star.png'>");
+                    r.html("<img style='width:18px;height:18px;vertical-align:middle;' src='img/half_star.png'>");
                   }
                 } else {
                   r.attr("value","H");
                   if (r.attr("weekend")=="yes") {
                     r.addClass("weekend").addClass("holiday");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
                   } else {
                     r.addClass("holiday");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
                   }
                 }
                 });
