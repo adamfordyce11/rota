@@ -791,8 +791,8 @@
         var UTCMonth=today.getUTCMonth()+1;
         var UTCYear=today.getUTCFullYear();
 
-        tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th colspan='40'>"+obj.title+"</th></tr></thead>";
-        tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th class='col-md-12' id='daytitle'>Day</th>";
+        tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th scope='row' colspan='40'>"+obj.title+"</th></tr></thead>";
+        tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th scope='row' class='col-md-8' id='daytitle'>Day</th>";
         for (day=startDate;day<=endDate;day=sday+day){
           var weekend="no", today="", p=new Date();
           p.setTime(day);

@@ -15,3 +15,5 @@ js/.rota.js.un~
 *.swp
 *.swp
 *.swp
+*.un~
+*.js~
