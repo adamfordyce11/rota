@@ -57,7 +57,7 @@
           t[++tp] = "        </div>";
           t[++tp] = "      </div>";
           t[++tp] = "      <div class='col-md-3'>";
-          t[++tp] = "        <div class='form-group' height='80%'>";
+          t[++tp] = "        <div class='col'>";
           t[++tp] = "          <label for='add'>Add: </label>";
           t[++tp] = "          <select multiple class='form-control' id='add'></select>";
           t[++tp] = "        </div>";
@@ -67,7 +67,7 @@
           t[++tp] = "        </div>";
           t[++tp] = "      </div>";
           t[++tp] = "      <div class='col-md-3'>";
-          t[++tp] = "        <div class='form-group'>";
+          t[++tp] = "        <div class='col'>";
           t[++tp] = "          <label for='remove'>Remove People: </label>";
           t[++tp] = "          <select multiple class='form-control' id='remove'></select>";
           t[++tp] = "        </div>";
