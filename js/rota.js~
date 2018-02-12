@@ -374,10 +374,10 @@
                   r.attr("value","H");
                   if (r.attr("weekend")=="yes") {
                     r.addClass("weekend").addClass("holiday");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
                   } else {
                     r.addClass("holiday");
-                    r.html("<img style='width:22px;height:22px;vertical-align:middle;' src='img/holiday.png'>");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
                   }
                 }
                 });
