@@ -70,10 +70,10 @@
           t[++tp] = "        <div class='form-group'>";
           t[++tp] = "          <label for='remove'>Remove People: </label>";
           t[++tp] = "          <select multiple class='form-control' id='remove'></select>";
-          t[++tp] = "        </div>";
-          t[++tp] = "        <div class='btn-group'>";
-          t[++tp] = "          <button id='removeBtn' class='btn btn-default' type='button'>";
-          t[++tp] = "            <em class='glyphicon glyphicon-align-left'></em><< Remove</button>"; 
+          t[++tp] = "          <div class='btn-group'>";
+          t[++tp] = "            <button id='removeBtn' class='btn btn-default' type='button'>";
+          t[++tp] = "              <em class='glyphicon glyphicon-align-left'></em><< Remove</button>"; 
+          t[++tp] = "          </div>";
           t[++tp] = "        </div>";
           t[++tp] = "      </div>";
           t[++tp] = "    </div>";
