@@ -867,7 +867,7 @@
 
         tableData[++ele]="</tbody></table>";  // Close the table
         // Add a totals row
-        tableData[++ele] = "<table id='rotaTotalsTable'><tbody>";
+/*        tableData[++ele] = "<table id='rotaTotalsTable'><tbody>";
         tableData[++ele] = "<tr id='totals'><td>Totals</td>";
 
         var iter=0;
@@ -899,7 +899,7 @@
           ++iter;
         }
         tableData[++ele] = "</tr>";
-        tableData[++ele]="</tbody></table>";  // Close the table
+        tableData[++ele]="</tbody></table>";  // Close the table */
 
         if (settings.force=="rw"){
           // Context menu
