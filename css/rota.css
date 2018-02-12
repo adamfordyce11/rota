@@ -41,6 +41,12 @@ td, th {
     width: 1%;
 }
 
+.table td.fitname, 
+.table th.fitname {
+    white-space: nowrap;
+    width: 5%;
+}
+
 /*
 td.n { min-width:25px; }
 td.right, th.right { min-width:300px;}
