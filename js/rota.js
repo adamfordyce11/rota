@@ -792,7 +792,7 @@
         var UTCYear=today.getUTCFullYear();
 
         tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th scope='row' class='col-sm-12 col-md-12 col-lg-12' colspan='40'>"+obj.title+"</th></tr></thead>";
-        tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th scope='row' class='col-sm-2 col-md-2 col-lg-4' id='daytitle'>Day</th>";
+        tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th scope='row' class='col-sm-2' id='daytitle'>Day</th>";
         for (day=startDate;day<=endDate;day=sday+day){
           var weekend="no", today="", p=new Date();
           p.setTime(day);
@@ -800,7 +800,7 @@
           var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="";
           if (d==0 || d==6){ weekend="yes"; c="weekend"; } else { weekend="no" };
           if (dom == UTCDom & m== UTCMonth & y == UTCYear) { today="today" } else { today="" } 
-          tableData[++ele]="<th class='col-sm-1 col-md-2 col-lg-4 p "+c+" "+today+"' year='"+y+"' month='"+m+"' day='"+d+"' id='"+totalDays+"' weekend='"+weekend+"'>"+dom+"</th>";
+          tableData[++ele]="<th class='col-sm-1 col-md-3 col-lg-4 p "+c+" "+today+"' year='"+y+"' month='"+m+"' day='"+d+"' id='"+totalDays+"' weekend='"+weekend+"'>"+dom+"</th>";
           ++totalDays;                                             // Keep a count of the total days in the rota period
         }
         tableData[++ele]="</tr>";                                  // Close the row
