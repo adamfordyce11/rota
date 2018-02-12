@@ -33,7 +33,7 @@
           t[++tp] = "  <div class='container-float'>";
           t[++tp] = "    <div class='row'>";
           t[++tp] = "      <div class='col-md-12'>";
-          t[++tp] = "        <table class='table table-sm' id='rota'>";
+          t[++tp] = "        <table class='table table-lg' id='rota'>";
           t[++tp] = "          <thead id='rotaHeader'><tr>";
           t[++tp] = "            <th colspan='32'>New Period";
           t[++tp] = "              <div class='titlebtn' id='rotaPreviousButton'><img src='img/before.png' /></div>";
