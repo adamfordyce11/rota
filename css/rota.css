@@ -35,8 +35,16 @@ td, th {
   text-align: center;
 }
 
+.table td.fit, 
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
+
+/*
 td.n { min-width:25px; }
 td.right, th.right { min-width:300px;}
+*/
 
 #title { position: relative; }
 
