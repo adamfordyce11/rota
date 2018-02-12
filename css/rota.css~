@@ -41,6 +41,12 @@ td, th {
     width: 1%;
 }
 
+.table td.fitname, 
+.table th.fitname {
+    white-space: nowrap;
+    width: 5%;
+}
+
 /*
 td.n { min-width:25px; }
 td.right, th.right { min-width:300px;}
@@ -95,6 +101,10 @@ td.right, th.right { min-width:300px;}
   min-width:100%;
   min-height:250px;
   height:100%;
+}
+
+.multiselect {
+  min-height: 70%;
 }
 
 #rotaBlank #rotaHeader th{

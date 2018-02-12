@@ -103,6 +103,10 @@ td.right, th.right { min-width:300px;}
   height:100%;
 }
 
+#remove, #add {
+  min-height: 70%;
+}
+
 #rotaBlank #rotaHeader th{
   overflow: hidden;
   position:absolute;
