@@ -30,3 +30,5 @@ js/.rota.js.un~
 *.js~
 *.un~
 *.css~
+*.un~
+*.js~
