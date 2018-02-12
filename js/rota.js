@@ -800,7 +800,7 @@
           var d=p.getUTCDay(), y=p.getUTCFullYear(), m=p.getUTCMonth()+1, dom=p.getUTCDate(),c="";
           if (d==0 || d==6){ weekend="yes"; c="weekend"; } else { weekend="no" };
           if (dom == UTCDom & m== UTCMonth & y == UTCYear) { today="today" } else { today="" } 
-          tableData[++ele]="<th class='p "+c+" "+today+"' year='"+y+"' month='"+m+"' day='"+d+"' id='"+totalDays+"' weekend='"+weekend+"'>"+dom+"</th>";
+          tableData[++ele]="<th class='col-sm-1 p "+c+" "+today+"' year='"+y+"' month='"+m+"' day='"+d+"' id='"+totalDays+"' weekend='"+weekend+"'>"+dom+"</th>";
           ++totalDays;                                             // Keep a count of the total days in the rota period
         }
         tableData[++ele]="</tr>";                                  // Close the row
