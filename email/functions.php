@@ -1,11 +1,11 @@
 <?php
 
-function getNamedAddress($rota,$user) {
-  $addr=Array(); $i=-1;
-  $base = $_SERVER['DOCUMENT_ROOT'];
-  include_once $base.'/inc/db_connect.php';
-  if ($stmt = $mysqli->prepare("SELECT email FROM members WHERE username= ? LIMIT 1")){
-    $stmt->bind_param('i',$user);
+function getNamedAddress($mysqli, $rota, $user) {
+  error_log("User: $user");
+
+  if ($stmt = $mysqli->prepare("SELECT `email` FROM `members` WHERE `username`= ? LIMIT 1")){
+    $addr=Array(); $i=-1;
+    $stmt->bind_param('s', $user);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows()==1) {
@@ -57,17 +57,22 @@ function email_rota($file,$period,$rota,$user,$type,$action="Updates") {
   date_default_timezone_set('UTC');
   $base = $_SERVER['DOCUMENT_ROOT'];
   $data=file_get_contents("$base/data/$file");
-  $json= json_decode($data,true);
+  $json= json_decode($data, true);
 
   if ($type == "single"){
     // Email whoever requeted the rota
     $addr=getAddresses($type,$rota,$user);
   } elseif($type == "multi") { 
+    require_once $base.'/inc/db_connect.php';
+    $addr=Array(); $i=-1;
     // Email all members requeted the rota
     foreach( $json['people'] as $k => $v) {
       //error_log($json['people'][$k]['name']);
       $name = $json['people'][$k]['name'];
-      $addr[++$i] = getNamedAddress($rota,$name);
+      if (strlen($name) > 0 and strlen($rota) > 0 ) {
+        error_log("Name: ".$name);
+        $addr[++$i] = &getNamedAddress($mysqli, $rota, $name);
+      }
     }
   }
   preg_match_all("/\d+-\d+-\d+/", $file, $matches); // Get date from filename

@@ -228,6 +228,10 @@
           if ($(settings.id).hasAttr("edit")) {
             auth=$(settings.id).attr("edit");
           }
+
+          if ($(settings.id).hasAttr("user")) {
+            settings.user=$(settings.id).attr("user");
+          }
           // Reset the editable entries
 //          what.removeClass("edit");
 //          what.attr("editable",editable);
@@ -679,6 +683,7 @@
         if (settings.user=="admin"){
            type="multi";
         }
+        console.log("User: " + settings.user + " Type: "+ type);
         var user_id=$(settings.id).attr("uid");
         $.get(settings.url,{'request':"email",'rota':"marinesupportoncall",'type':type,'user_id':user_id,'period':settings.period},null,"json").done(function(d){
           // do nothing

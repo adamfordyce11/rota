@@ -79,7 +79,7 @@ if (login_check($mysqli) == true) {
       <div class="row">
     <?php if (isset($_GET['error'])) { echo '<p class="error">Error Logging In!</p>'; } ?>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
-        <div class="col-sm-12 col-md-12 col-lg-10" id="cal1" edit="<?php echo htmlentities($_SESSION['username']); ?>" uid="<?php echo htmlentities($_SESSION['user_id']);?>"></div>
+        <div class="col-sm-12 col-md-12 col-lg-10" id="cal1" edit="<?php echo htmlentities($_SESSION['username']); ?>" uid="<?php echo htmlentities($_SESSION['user_id']);?>" user="<?php echo htmlentities($_SESSION['user_type']);?>"></div>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
       </div>
     <?php } else { ?>
