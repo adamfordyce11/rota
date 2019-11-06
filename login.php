@@ -3,7 +3,7 @@ include_once 'inc/config.inc';
 include_once 'inc/db_connect.php';
 include_once 'inc/functions.php';
 sec_session_start();
-if (login_check($conn) == true) {
+if (login_check($mysqli) == true) {
     $logged = 'in';
 } else {
     $logged = 'out';

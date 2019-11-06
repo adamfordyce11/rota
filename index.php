@@ -30,6 +30,7 @@ if (login_check($mysqli) == true) {
   </head>
 
   <body>
+    <?php #print_r($_SESSION); ?>
 
     <!-- Fixed navbar -->
     <nav class="navbar navbar-toggleable-md navbar-inverse navbar-fixed-top bg-inverse container-float">
@@ -42,9 +43,14 @@ if (login_check($mysqli) == true) {
           <li class="nav-item active">
             <a class="nav-link" href="#">Month Overview <span class="sr-only">(current)</span></a>
           </li>
+          <?php if ($logged =="in"){?>
           <li class="nav-item">
             <a class="nav-link" href="monthly.php">Sign off sheet</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="vessels.php">Vessel Index</a>
+          </li>
+          <?php } ?>
         </ul>
         <form class="form-inline mt-2 mt-md-0">
           <input class="form-control mr-sm-2" type="text" placeholder="Search">
@@ -77,18 +83,27 @@ if (login_check($mysqli) == true) {
       </div>
     <?php if ($logged == "in") { ?>
       <div class="row">
-    <?php if (isset($_GET['error'])) { echo '<p class="error">Error Logging In!</p>'; } ?>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
         <div class="col-sm-12 col-md-12 col-lg-10" id="cal1" edit="<?php echo htmlentities($_SESSION['username']); ?>" uid="<?php echo htmlentities($_SESSION['user_id']);?>" user="<?php echo htmlentities($_SESSION['user_type']);?>"></div>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
       </div>
+      <!--div class="row">
+        <div class="col-sm-0 col-md-0 col-lg-1"></div>
+        <div class="col-sm-12 col-md-12 col-lg-10" id="cal2" edit="<?php echo htmlentities($_SESSION['username']); ?>" uid="<?php echo htmlentities($_SESSION['user_id']);?>" user="<?php echo htmlentities($_SESSION['user_type']);?>"></div>
+        <div class="col-sm-0 col-md-0 col-lg-1"></div>
+      </div-->
     <?php } else { ?>
       <div class="row">
     <?php if (isset($_GET['error'])) { echo '<p class="error">Error Logging In!</p>'; } ?>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
-        <div class="col-sm-12 col-md-12 col-lg-10" id="calnoedit"></div>
+        <div class="col-sm-12 col-md-12 col-lg-10" id="cal1noedit"></div>
         <div class="col-sm-0 col-md-0 col-lg-1"></div>
       </div>
+      <!--div class="row">
+        <div class="col-sm-0 col-md-0 col-lg-1"></div>
+        <div class="col-sm-12 col-md-12 col-lg-10" id="cal2noedit"></div>
+        <div class="col-sm-0 col-md-0 col-lg-1"></div>
+      </div-->
     <?php } ?>
     </div>
 

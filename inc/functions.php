@@ -78,7 +78,7 @@ function login($email, $password, $mysqli) {
                     $_SESSION['user_id'] = $user_id;
 
                     // XSS protection as we might print this value
-                    $arr=split(" ",$username);
+                    $arr=explode(" ", $username);
                     $narr=array(); $i=-1;
                     foreach($arr as $k=>$v){
                       $narr[++$i] = preg_replace("/[^a-zA-Z0-9_\-]+/", "", $v);
@@ -109,7 +109,8 @@ function login($email, $password, $mysqli) {
         }
     } else {
         // Could not create a prepared statement
-        header("Location: ../error.php?err=Database error: cannot prepare statement");
+	$err = ($mysqli->error);
+        header("Location: ../error.php?err=$err");
         exit();
     }
 }

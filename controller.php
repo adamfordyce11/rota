@@ -2,6 +2,11 @@
 
 date_default_timezone_set('UTC');
 
+function alog($who, $what, $level) {
+
+}
+
+
 function parse_get($dirty){
   $clean = htmlspecialchars($dirty); 
   return strip_tags($clean);
@@ -117,6 +122,10 @@ function savePerson() {
     $index = parse_get($_GET['i']);
     $value = parse_get($_GET['d']);
     $file = getFile($_GET['period']);
+
+    $log_data = [$period, $index, $value, $file ];
+    alog($who, $log_data , "LOG");
+
     $json=file_get_contents("data/$file");
     $json_a= json_decode($json,true);
     $array = array();
@@ -132,7 +141,7 @@ function savePerson() {
           }
         }
         $json_a['people'][$peopleidx]['data']['booked'] = $array;
-        $perms = substr(sprintf('%o', fileperms('/var/www/supportrota/data/'.$file)), -4);
+        $perms = substr(sprintf('%o', fileperms(DATA_PATH.$file)), -4);
         error_log($perms);
 	$fp = fopen("data/$file", 'w');
 	fwrite($fp, json_encode($json_a));

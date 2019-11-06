@@ -15,6 +15,7 @@
       force: "rw",
       sort: "asc",
       user: "single",
+      rota: "marine",
     };
     var settings = $.extend({}, defaults, options);
 
@@ -25,7 +26,7 @@
         $(settings.id+" #rota").remove()                           // Remove if it already exists
         $("#rotaNewPeriod").remove();
         document.title = "Create a new rota period";              // Set the document title
-        $.get(settings.url, { 'request':"getLastEntry" }, null,"json").done(function(data){
+        $.get(settings.url, { 'request':"getLastEntry", 'rota': settings.rota }, null,"json").done(function(data){
           var first=data+(60*60*24);
           var t=Array(), tp=-1;               // Declare an array and an index to build the HTML
           t[++tp] = "<div id='rotaNewPeriod'>";
@@ -35,7 +36,7 @@
           t[++tp] = "      <div class='col-md-12'>";
           t[++tp] = "        <table class='table table-sm col-12' id='rota'>";
           t[++tp] = "          <thead id='rotaHeader'><tr>";
-          t[++tp] = "            <th colspan='32'>New Period";
+          t[++tp] = "            <th colspan='50'>New Period";
           t[++tp] = "              <div class='titlebtn' id='rotaPreviousButton'><img src='img/before.png' /></div>";
           t[++tp] = "            </th>";
           t[++tp] = "          </tr></thead>";
@@ -84,9 +85,9 @@
           $(settings.id+" #rotaPreviousButton").on("click",function(){ changePeriod( settings.period, "previous") });
           $(settings.id+" #createPeriod").hide();
 
-          $.get(settings.url, { 'request':"getJson", 'period':settings.period }, null,"json").done(function(data){
+          $.get(settings.url, { 'request':"getJson", "rota": settings.rota, 'period':settings.period }, null,"json").done(function(data){
             // Populate the drop down list
-            $.get(settings.url,{'request':"getPeople",'rota':'marinesupportoncall' },"","json").done(function(d){
+            $.get(settings.url,{'request':"getPeople",'rota': settings.rota },"","json").done(function(d){
               console.log("getPeople()");
               $.each(d.people, function(key,value){ // For each person
                 $('<option>').val(Number(key+1)).text(value.name).appendTo("#add"); // Add the name as an option
@@ -126,6 +127,7 @@
                 'request':"createPeriod", 
                 'period':$(settings.id+" #startDate").attr("time"),
                 'days':$(settings.id+" #duration").val(),
+                'rota': settings.rota,
                 'who':json_names
               }, null,"json").always(function(data){
                  // Need to update the table, re-initialise.
@@ -181,7 +183,7 @@
         console.log("addEntry");
         $.each($(settings.id+" #settingsAdd option:selected"), function(){
           var who = $(this).text();
-          $.get(settings.url, { request:"addPerson", 'person': who, 'period': settings.period, 'days': totalDays }, null,"json").done(function(d){
+          $.get(settings.url, { request:"addPerson", "rota": settings.rota, 'person': who, 'period': settings.period, 'days': totalDays }, null,"json").done(function(d){
             initTable(d); // After adding someone, rebuild the table contents
             Reload(d);   // Reload the table to ensure the onclick and rules are added correctly
           });
@@ -196,7 +198,7 @@
         $.each($(settings.id+" #settingsRemove option:selected"), function(){
           var who = $(this).text();
           console.log("Remove: "+who);
-          $.get(settings.url, { 'request':"removePerson",'person':who,'period':settings.period,'days':totalDays }, null,"json").done(function(d){
+          $.get(settings.url, { 'request':"removePerson", "rota": settings.rota, 'person':who,'period':settings.period,'days':totalDays }, null,"json").done(function(d){
             initTable(d); // After adding someone, rebuild the table contents
             Reload(d);   // Reload the table to ensure the onclick and rules are added correctly
           });
@@ -311,7 +313,7 @@
         // Update the last update time 
         $(settings.lastUpdate).text(UTCDom+"/"+UTCMonth+"/"+UTCYear+" @ "+hh+":"+mm+":"+ss);
 
-        $.get(settings.url, { 'request':"getJson", 'period': settings.period }, null,"json").done(function(d){
+        $.get(settings.url, { 'request':"getJson", 'rota': settings.rota, 'period': settings.period }, null,"json").done(function(d){
           $(settings.id+" tr.r").each(function(){
           var who=$(this).attr("id");
           $.each(d.people,function(i,d){
@@ -374,6 +376,20 @@
                     r.text("0.25");
                     //r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/half_star.png'>");
                   }
+                } else if (data==3) {
+               
+                   console.log("Data 3= "+data);
+                  r.attr("value","H");
+                  if (r.attr("weekend")=="yes") {
+                    r.addClass("weekend").addClass("holiday");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
+                  } else {
+                    r.addClass("holiday");
+                    r.html("<img style='width:12px;height:12px;vertical-align:middle;' src='img/holiday.png'>");
+                  }
+                
+                } else if (data==4) {
+                  console.log("Data 4= "+data);
                 } else {
                   r.attr("value","H");
                   if (r.attr("weekend")=="yes") {
@@ -434,7 +450,7 @@
           // This is the triggered action name
           switch($(this).attr("data-action")) {   
           case "remove": removeEntry(); break;
-          case "refresh": $.get(settings.url, { 'request':"getJson", 'period': settings.period }, null,"json").done(function(d){ Reload(d)}); break;
+          case "refresh": $.get(settings.url, { 'request':"getJson", 'rota': settings.rota, 'period': settings.period }, null,"json").done(function(d){ Reload(d)}); break;
           case "clear": console.log($(this)); break;
           case "oncall": console.log($(this)); break;
           case "holiday": console.log($(this)); break;
@@ -464,7 +480,7 @@
         tableData[++ele]="<div id='rotaBlank'>";
         tableData[++ele]="  <table id='rota' class='table table-sm'>";
         tableData[++ele]="    <thead id='rotaHeader'><tr>";
-        tableData[++ele]="      <th colspan='32'>"+obj.title;
+        tableData[++ele]="      <th colspan='50'>"+obj.title;
         tableData[++ele]="        <div class='titlebtn' id='rotaBlankClose'><img src='img/close.png' alt='Close'></div>";
         tableData[++ele]="      </th>";
         tableData[++ele]="    </tr></thead>";
@@ -578,7 +594,7 @@
         }
 
         // Populate the Add ist
-        $.get(settings.url,{'request':"getPeople",'rota':'marinesupportoncall' },"","json").done(function(d){
+        $.get(settings.url,{'request':"getPeople", 'rota': settings.rota },"","json").done(function(d){
           $.each(d.people, function(key,value){                // For each person
             $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsAdd");// Add the name as an option
           });
@@ -586,7 +602,7 @@
 
         var numOfPeople = 0;
         // Populate the Remove list
-        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+        $.get(settings.url,{'request':"getJson", 'rota': settings.rota, 'period':settings.period },"","json").done(function(d){
           $.each(d.people, function(key,value){                // For each person
             $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsRemove");// Add the name as an option
             $(settings.id+" #settingsAdd option:contains('"+value.name+"')").remove();
@@ -595,7 +611,7 @@
         });
 
         // Populate the Edit list
-        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+        $.get(settings.url,{'request':"getJson", 'rota': settings.rota, 'period':settings.period },"","json").done(function(d){
           $.each(d.people, function(key,value){                // For each person
             if (auth != value.name) {
               $('<option>').val(Number(key+1)).text(value.name).appendTo("#settingsEdit");// Add the name as an option
@@ -630,7 +646,7 @@
         if (numOfPeople == 0){
           $(settings.id+" #deleteBtn").show();// Hide the delete button
           $(settings.id+" #deleteBtn").on("click",function(){
-            $.get(settings.url,{'request':"deletePeriod",'period':settings.period },"","json");
+            $.get(settings.url,{'request':"deletePeriod", 'rota': settings.rota, 'period':settings.period },"","json");
             $(settings.id+" #rotaBlank").remove();
             changePeriod(settings.period, "previous");
           });
@@ -660,7 +676,7 @@
           settings.period=Number(date+86400); // Add 1 day
         }
         console.log(settings.period);
-        $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+        $.get(settings.url,{'request':"getJson", 'rota': settings.rota, 'period':settings.period },"","json").done(function(d){
           $(settings.id+" #rota").remove(); // Remove any existing rota that is already on the page for this ID
           main();
         }).fail(function(xhr,st,err){
@@ -685,7 +701,7 @@
         }
         console.log("User: " + settings.user + " Type: "+ type);
         var user_id=$(settings.id).attr("uid");
-        $.get(settings.url,{'request':"email",'rota':"marinesupportoncall",'type':type,'user_id':user_id,'period':settings.period},null,"json").done(function(d){
+        $.get(settings.url,{'request':"email",'rota':settings.rota,'type':type,'user_id':user_id,'period':settings.period},null,"json").done(function(d){
           // do nothing
         }).fail(function(xhr,st,err){ 
           errorMessage("Failed to send email");
@@ -796,7 +812,7 @@
         var UTCMonth=today.getUTCMonth()+1;
         var UTCYear=today.getUTCFullYear();
 
-        tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th scope='row'  colspan='40'>"+obj.title+"</th></tr></thead>";
+        tableData[++ele]="<table id='rota' width='100%' cellpadding='0' cellspacing='0' class='table table-sm table-responsive'><thead id='rotaHeader'><tr><th scope='row'  colspan='50'>"+obj.title+"</th></tr></thead>";
         tableData[++ele]="<tbody id='days'><tr id='dh' scope='row'><th scope='row' class='fitname' id='daytitle'>Day</th>";
         for (day=startDate;day<=endDate;day=sday+day){
           var weekend="no", today="", p=new Date();
@@ -945,7 +961,7 @@
 //            $(this).append("<div class='sortbtn' id='rotaPreviousButton'><img src='img/after.png' /></div>");
           }
           
-          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.get(settings.url,{'request':"getJson",'rota': settings.rota, 'period':settings.period },"","json").done(function(d){
             loading("start");
             initTable(d);
             Reload(d);
@@ -1051,10 +1067,12 @@
           if(state=="F"){       data=1;
           }else if(state=="O"){ data=2;
           }else if(state=="1"){ data=3;
+          }else if(state=="2"){ data=4;
+          }else if(state=="3"){ data=5;
           }else{                data=0;}
           var idx=$(what).attr("id").match(/\d+/)[0];
           var who=$(what).parent().attr("id");
-          $.get(settings.url, { request:"savePerson", 'person': who, 'period': settings.period, 'i': idx, 'd':data }, null,"json");
+          $.get(settings.url, { request:"savePerson", "rota": settings.rota, 'person': who, 'period': settings.period, 'i': idx, 'd':data }, null,"json");
         } else if (state=="O"){
           index=$(what).index();
           day=$(settings.id+' tr#dh th.p').eq(index-1).text(); // Get the day for the taken cell clicked on.
@@ -1062,7 +1080,7 @@
           console.log("Taken by "+who+" :"+day);
         }
         setTimeout(function(){
-          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.get(settings.url,{'request':"getJson", 'rota': settings.rota, 'period':settings.period },"","json").done(function(d){
             Reload(d);
           });
         },100);
@@ -1077,7 +1095,6 @@
         t[++tp] = "<p>Please contact your manager to start the next period.</p>";
         t[++tp] = "</div>";
         $(settings.id).append(t.join(''));// Show the form
-
       }
 
       /*
@@ -1088,7 +1105,7 @@
             var tp=Math.round(Date.now()/1000);  // On Startup. look for the current period
             settings.period=tp;                  // Set the period for this rota
           }
-          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.get(settings.url,{'request':"getJson", "rota": settings.rota, 'period':settings.period },"","json").done(function(d){
             $(settings.id+" #rota").remove(); // Remove any existing rota that is already on the page for this ID
             switch(settings.action) {
               case ("rota"):
@@ -1131,7 +1148,7 @@
       main();
       // Update the table every 1800000ms (30mins)
       window.setInterval(function(){
-          $.get(settings.url,{'request':"getJson",'period':settings.period },"","json").done(function(d){
+          $.get(settings.url,{'request':"getJson", "rota": settings.rota, 'period':settings.period },"","json").done(function(d){
             Reload(d);
           });
          /// call your function here
@@ -1142,9 +1159,13 @@
       return;
   }
 }( jQuery ));
-$("#cal1").rota({id: "#cal1", lastUpdate: "#lastUpdateTime" });
-$("#calnoedit").rota({id: "#calnoedit", force: "ro", lastUpdate: "#lastUpdateTime" });
+$("#cal1").rota({id: "#cal1", lastUpdate: "#lastUpdateTime", rota: "marine" });
+$("#cal1noedit").rota({id: "#cal1noedit", force: "ro", lastUpdate: "#lastUpdateTime" });
+$("#cal2").rota({id: "#cal2", lastUpdate: "#lastUpdateTime", rota: "seabed" });
+$("#cal2noedit").rota({id: "#cal2noedit", force: "ro", lastUpdate: "#lastUpdateTime" });
 
+//$("#cal1").rota({id: "#cal1", lastUpdate: "#lastUpdateTime" });
+//$("#calnoedit").rota({id: "#cal1noedit", force: "ro", lastUpdate: "#lastUpdateTime" });
 //$("#cal1").rota({ period:"1455840000"});
 //$("#cal1").rota({ action:"config"});
 //$("#cal1").rota({ action:"config", id:"#cal3", period:"1453161600"});

@@ -51,6 +51,7 @@ define("DATABASE", "rota");             // The database name.
  */
 define("CAN_REGISTER", "any");
 define("DEFAULT_ROLE", "member");
+define("DATA_PATH", "/home/bitnami/apps/rota/htdocs/data");
 
 /**
  * Is this a secure connection?  The default is FALSE, but the use of an
