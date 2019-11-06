@@ -139,10 +139,11 @@ function email_rota($file,$period,$rota,$user,$type,$action="Updates") {
       foreach ($json['people'][$k]['data']['booked'] as $k2 => $v2) {
         ++$pd;
         $dom=date("j",$start_ts+($pd*$sid));
-        if (($start_ts+($pd*$sid)) < $end_ts){
-        $dow=date("N",$start_ts+($pd*$sid));
-        $weekend=false;
-        if ($dow==6 or $dow==7){ $weekend=true;}
+        if (($start_ts+($pd*$sid)) < $end_ts)
+        {
+          $dow=date("N",$start_ts+($pd*$sid));
+          $weekend=false;
+          if ($dow==6 or $dow==7){ $weekend=true;}
           $entry="";
           $color="#CFC";
           if ($v2=="0"){
@@ -150,8 +151,12 @@ function email_rota($file,$period,$rota,$user,$type,$action="Updates") {
           } elseif ($v2=="1") {
             if ($weekend) { $color="#FF80AA"; $entry="1.0"; $sum+="1.0"; } else {$color="#FCD"; $entry="0.5"; $sum+="0.5";}
           } elseif ($v2=="2") {
-            $entry="N/A";
-            if ($weekend) { $color="#a366ff"; } else {$color="#f0e6ff";}
+            if ($weekend) { $color="#FF80AA"; $entry="0.5"; $sum+="0.5"; } else {$color="#FCD"; $entry="0.25"; $sum+="0.25";}
+          } elseif ($v2=="3") {
+            $entry="H";
+            $color="#a366ff";
+            #if ($weekend) { $color="#a366ff"; } else {$color="#f0e6ff";}
+            #if ($weekend) { $color="#a366ff"; } else {$color="#f0e6ff";}
           }
           $out[++$i] = "      <td style='border-style: solid; border-width: 1px; border-color: black;background-color:$color;min-width:25px;'>$entry</td>";
         }
